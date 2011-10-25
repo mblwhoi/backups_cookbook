@@ -1,0 +1,60 @@
+Backup::Model.new(:<%= @job_name %>, '<%= @job["description"] %>') do
+
+  #                      
+  # Sources
+  # 
+
+  <%- unless @job["file_tasks"].nil? %>
+  # Files/Directories
+  
+    <%- @job["file_tasks"].each do |task_name,config| %>
+  archive :<%= task_name %> do |archive|
+      <% config["includes"].each do |path| %>archive.add '<%= path %>'<% end %>
+      <% config["excludes"].each do |path| %>archive.exclude '<%= path %>'<% end %>
+  end
+    
+    <%- end %>
+  <%- end %>
+
+
+  <%- unless @job["database_tasks"].nil? %>
+  # Databases
+  
+  # MySQL Defaults
+  Backup::Configuration::Database::MySQL.defaults do |db|
+    db.username = "root"
+    db.password = '<%= node[:mysql][:server_root_password] %>'
+    db.host = "localhost"
+    db.port = 3306
+    db.skip_tables = []
+    db.only_tables = []
+    db.additional_options = []
+  end
+
+
+
+    <%- @job["database_tasks"].each do |task_name, config| %>
+  database <%= config["type"] %> do |db|
+    db.name = '<%= config["name"] %>'
+      <% if ! config["params"].nil? %>
+        <% config["params"].each do |key,value| %>
+      <%= "db.#{key} = #{value}" %>
+        <%- end %>     
+      <%- end %>     
+  end
+    <%- end %>  
+  <%- end %>
+  
+
+    
+  #
+  # Destinations
+  #
+  <%- @job["destinations"].each do | destination, config| %>
+  store_with <%= config["type"] %> do | <%= config["type"].downcase %> |
+    <% config["params"].each do |key,value| %>
+    <%= "#{config["type"].downcase}.#{key} = #{value}" %>
+    <%- end %>     
+  end
+  <%- end unless @job["destinations"].nil? %>
+end
