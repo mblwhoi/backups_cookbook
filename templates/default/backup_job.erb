@@ -9,8 +9,12 @@ Backup::Model.new(:<%= @job_name %>, '<%= @job["description"] %>') do
   
     <%- @job["file_tasks"].each do |task_name,config| %>
   archive :<%= task_name %> do |archive|
-      <% config["includes"].each do |path| %>archive.add '<%= path %>'<% end %>
-      <% config["excludes"].each do |path| %>archive.exclude '<%= path %>'<% end %>
+      <% config["includes"].each do |path| %>
+      archive.add '<%= path %>'
+<% end %>
+      <% config["excludes"].each do |path| %>
+      archive.exclude '<%= path %>'
+<% end %>
   end
     
     <%- end %>
