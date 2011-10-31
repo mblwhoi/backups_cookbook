@@ -4,7 +4,9 @@
 #
 # Backup client setup.  For making a client that works with a backup::destination.
 
-include_recipe %w{backup ssh_key}
+# Note: we include ohai so that the 'user_public_keys' plugin gets included.
+# TODO: put the user_public_keys plugin in its own recipe for clarity?
+include_recipe %w{backup ssh_key ohai}
 
 # Setup ssh key for root if no key exists.
 ssh_key "root key" do
