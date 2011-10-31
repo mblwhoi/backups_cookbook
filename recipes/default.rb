@@ -4,6 +4,9 @@
 #
 # Backups setup.
 
+# Include the whenever recipe
+include_recipe "whenever"
+
 # Install the backup gem.
 gem_package "backup" do
   action :install

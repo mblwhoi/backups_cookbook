@@ -26,7 +26,7 @@ node['backup']['client']['storage_destinations'].each do |destination_config|
   if destination_config['type'] == 'node'
 
     # Get node's domain name.
-    ip = search('node', "name:#{destination_config['name']}")[0].ip
+    ip = search('node', "name:#{destination_config['name']}")[0].ipaddress
 
     processed_config['type'] = 'node'
     processed_config['name'] = destination_config['name']
@@ -54,7 +54,7 @@ node['backup']['client']['storage_destinations'].each do |destination_config|
     node_list.each do |n|
       processed_config['type'] = 'node'
       processed_config['name'] = n.name
-      processed_config['ip'] = n.ip
+      processed_config['ip'] = n.ipaddress
     end
 
   end
