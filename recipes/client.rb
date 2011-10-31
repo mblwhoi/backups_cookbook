@@ -18,8 +18,8 @@ end
 # Initialize a hash of processed destination configs.
 processed_destinations = {}
 
-# Process storage destinations.
-node['backup']['client']['storage_destinations'].each do |destination_config|
+# Process default destinations.
+node['backup']['client']['default_destinations'].each do |destination_config|
   
   # Initialize processed destination config.
   processed_config = {}
