@@ -1,4 +1,4 @@
-Backup::Model.new(:<%= @job_name %>, '<%= @job["description"] %>') do
+Backup::Model.new(:'<%= @job_name %>', '<%= @job["description"] %>') do
 
   #                      
   # Sources
@@ -8,7 +8,7 @@ Backup::Model.new(:<%= @job_name %>, '<%= @job["description"] %>') do
   # Files/Directories
   
     <%- @job["file_tasks"].each do |task_name,config| %>
-  archive :<%= task_name %> do |archive|
+  archive :'<%= task_name %>' do |archive|
       <% config["includes"].each do |path| %>
       archive.add '<%= path %>'
 <% end %>

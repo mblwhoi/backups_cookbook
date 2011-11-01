@@ -18,7 +18,7 @@ end
 # Initialize a hash of processed destination configs.
 processed_destinations = {}
 
-# Process storage destinations.
+# Process default destinations.
 node['backup']['client']['default_destinations'].each do |destination_config|
   
   # Initialize processed destination config.

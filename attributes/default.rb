@@ -7,10 +7,13 @@ default[:backup][:configs_dir] = "/data/backup_jobs"
 
 default[:backup][:jobs] = {}
 
+# defaults:destinations is set programmatically.
 default[:backup][:defaults][:destinations] = {}
+
 default[:backup][:defaults][:frequency] = ["daily"]
 
-default[:backup][:client][:storage_destinations] = []
+# client:default_destinations is typically set in node or role attributes.
+default[:backup][:client][:default_destinations] = []
 default[:backup][:client][:defaults][:keep] = 5
 
 default[:backup][:manager][:backup_dir] = "/data/backups"
