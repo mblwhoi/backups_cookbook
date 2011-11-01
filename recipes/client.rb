@@ -19,7 +19,7 @@ end
 processed_destinations = {}
 
 # Process storage destinations.
-node['backup']['client']['storage_destinations'].each do |destination_config|
+node['backup']['client']['default_destinations'].each do |destination_config|
   
   # Initialize processed destination config.
   processed_config = {}
