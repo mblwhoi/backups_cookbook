@@ -38,7 +38,7 @@ node['backup']['client']['default_destinations'].each do |destination_config|
   # Handle ip address type configs.
   elsif destination_config['type'] == 'ip'
 
-    name = search('node', "ip:#{destination_config['ip']}")[0].name
+    name = search('node', "ipaddress:#{destination_config['ip']}")[0].name
 
     processed_config['type'] = 'node'
     processed_config['name'] = name
