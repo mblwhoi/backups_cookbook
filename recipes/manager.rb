@@ -1,6 +1,6 @@
 #
-# Cookbook Name:: backup_manager
-# Recipe:: default
+# Cookbook Name:: backups
+# Recipe:: manager
 #
 
 # Make backups parent directory.
@@ -13,12 +13,12 @@ directory "#{node[:backup][:manager][:backup_dir]}" do
 end
 
 # Get current list of backup clients to service.
-clients = search(node[:backup][:manager][:client_search_index], node[:backup][:manager][:client_search_query])
+clients = search(node['backup']['manager']['client_search_index'], node['backup']['manager']['client_search_query'])
 
 # Get old list of backup clients we service from node attributes.
 old_client_list = []
-if node[:backup][:manager].attribute?("clients")
-  old_client_list = node[:backup][:manager][:clients]
+if node['backup']['manager'].attribute?("clients")
+  old_client_list = node['backup']['manager']['clients']
 end
 
 # Remove clients which are not in the current list.
@@ -60,32 +60,44 @@ clients.each do |client|
     action :create
   end
 
-  # Set the path to the authorized_keys file
-  authorized_keys_file = "#{storage_folder}/.ssh/authorized_keys"
+  # Initialize a list of public keys which should have access to the backups.
+  access_keys = []
 
-  # Create authorized_keys file if it does not exist.
-  execute "create authorized_keys file for #{client_name}" do
-    command "touch #{authorized_keys_file}; chown #{user_name}:#{user_name} #{authorized_keys_file}; chmod 700 #{authorized_keys_file}"
-    not_if "test -f #{authorized_keys_file}"
-  end
-
-  # Add the client's root public keys to the user's authorized_keys file.
-  # Note: the public keys come from the client node's attributes.
+  # Add the client's root public keys to the list.
+  # Note: root users's public keys come from the client node's attributes,
+  # via the ohai plugin 'user_public_keys'.
   client_key = ""
-  if client.attribute?('user_public_keys') && client[:user_public_keys].attribute?('root') && client[:user_public_keys][:root]
-
-    # For each key...
-    client[:user_public_keys][:root].each do |key_name, key|
-
-      # Add key if it is not in the authorized_keys file.
-      execute "add key #{key_name} for #{client_name}" do
-        command "echo '#{key}' >> #{authorized_keys_file}"
-        not_if "grep -q -v '#{key}' #{authorized_keys_file}"
-      end
-    
+  if client.attribute?('user_public_keys') && client['user_public_keys'].attribute?('root') && client['user_public_keys']['root']
+    client['user_public_keys']['root'].each do |key_name, key|
+      access_keys << key
     end
-
   end
+
+  # Add the client's users' public keys to the list.
+  # Note: the users for which we try to add keys are those users specified
+  # in a node's [users][user_configs] attributes, per the users::users recipe.
+  if client.attribute?('users') && client['users'].attribute?('user_configs')
+    client['users']['user_configs'].each do |user_config|
+      
+      # Try to get the user's public key.
+      user = user_config['id']
+      if client.attribute?('user_public_keys') && client['user_public_keys'].attribute?(user) && ! client['user_public_keys'][user].nil?
+        client['user_public_keys'][user].each do |key_name, key|
+          access_keys << key
+        end
+      end
+    end
+  end
+
+  # Generate the authorized keys file from the access keys.
+  template "#{storage_folder}/.ssh/authorized_keys" do
+    source "authorized_keys.erb"
+    owner "#{user_name}"
+    group "#{user_name}"
+    mode "0600"
+    variables :ssh_keys => access_keys
+  end
+
 
 end
 
