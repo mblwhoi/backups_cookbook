@@ -102,6 +102,7 @@ clients.each do |client|
           end
         end
       end
+    end
   end
 
   # Generate the authorized keys file from the access keys.
