@@ -79,14 +79,29 @@ clients.each do |client|
   if client.attribute?('users') && client['users'].attribute?('user_configs')
     client['users']['user_configs'].each do |user_config|
       
-      # Try to get the user's public key.
-      user = user_config['id']
-      if client.attribute?('user_public_keys') && client['user_public_keys'].attribute?(user) && ! client['user_public_keys'][user].nil?
-        client['user_public_keys'][user].each do |key_name, key|
-          access_keys << key
+      user = {}
+      
+      # If type is databag, get user data from databag.
+      if user_config["type"] == 'databag'
+        databag = user_config["databag"] || node["users"]["default_users_databag"]
+        search("#{databag}", "id:#{user_config['id']}") do |u| 
+          user.merge!(u)
+        end 
+
+      # If type is inline, get user data from the given configuration.
+      elsif user_config["type"] == 'inline'
+        user.merge!(user_config)
+      end 
+
+      # If we do have a user...
+      if user['id']
+        # Try to get the user's authorized keys.
+        if ! user['ssh_keys'].nil?
+          user['ssh_keys'].each do |key|
+            access_keys << key
+          end
         end
       end
-    end
   end
 
   # Generate the authorized keys file from the access keys.
